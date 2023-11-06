@@ -31,6 +31,14 @@ async function run() {
         const allBlogsCollection = await client.db('blogsDB').collection('allBlogs')
 
 
+        // all blogs post collections
+        app.post('/allBlogs', async (req, res) => {
+            const blog = req.body;
+            const result = await allBlogsCollection.insertOne(blog)
+            res.send(result)
+        })
+
+
         // recent blogs collection
         app.get('/allBlogs', async (req, res) => {
             const result = await allBlogsCollection.find().toArray();
@@ -44,6 +52,7 @@ async function run() {
             // console.log(data);
             res.send(data);
         })
+
 
 
 
