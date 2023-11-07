@@ -73,6 +73,11 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/wishlist', async (req, res) => {
+            const result = await wishlistCollection.find().toArray();
+            res.send(result);
+        })
+
 
 
 
