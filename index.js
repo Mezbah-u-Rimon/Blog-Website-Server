@@ -29,6 +29,7 @@ async function run() {
         await client.connect();
 
         const allBlogsCollection = await client.db('blogsDB').collection('allBlogs')
+        const wishlistCollection = await client.db('blogsDB').collection('wishlist')
 
 
         // all blogs post collections
@@ -39,9 +40,21 @@ async function run() {
         })
 
 
-        // recent blogs collection
+        // recent and all blogs collection
+        //All blogs filter by category
         app.get('/allBlogs', async (req, res) => {
-            const result = await allBlogsCollection.find().toArray();
+            let queryObj = {};
+
+            const category = req.query.category;
+            const title = req.query.title;
+
+            const titleResult = { title: { $regex: title, $options: 'i' } };
+
+            if (category) {
+                queryObj.category = category;
+            }
+
+            const result = await allBlogsCollection.find(queryObj, titleResult).sort({}).toArray();
 
             const data = result.sort((a, b) => {
                 const dateA = new Date(`${a.date} ${a.time}`);
@@ -49,9 +62,19 @@ async function run() {
                 return dateB - dateA;
             });
 
-            // console.log(data);
             res.send(data);
         })
+
+
+        // all blogs post in wishlist collections
+        app.post('/wishlist', async (req, res) => {
+            const cart = req.body;
+            const result = await wishlistCollection.insertOne(cart)
+            res.send(result)
+        })
+
+
+
 
 
 
