@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -40,7 +40,6 @@ async function run() {
             res.send(result)
         })
 
-
         // recent and all blogs collection
         //All blogs filter by category
         app.get('/allBlogs', async (req, res) => {
@@ -65,6 +64,29 @@ async function run() {
 
             res.send(data);
         })
+
+        app.put('/allBlogs/:id', async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedBlog = {
+                $set: {
+                    title: data.title,
+                    category: data.category,
+                    date: data.date,
+                    time: data.time,
+                    bl_st_details: data.bl_st_details,
+                    bl_lg_details: data.bl_lg_details,
+                    image: data.image,
+                },
+            };
+            const result = await allBlogsCollection.updateOne(filter, updatedBlog, options)
+            res.send(result)
+        })
+
+
 
 
         // all blogs post in wishlist collections
