@@ -30,6 +30,7 @@ async function run() {
 
         const allBlogsCollection = await client.db('blogsDB').collection('allBlogs')
         const wishlistCollection = await client.db('blogsDB').collection('wishlist')
+        const commentCollection = await client.db('blogsDB').collection('comment')
 
 
         // all blogs post collections
@@ -86,6 +87,17 @@ async function run() {
         })
 
 
+        //comment collection
+        app.post('/comment', async (req, res) => {
+            const comment = req.body;
+            const result = await commentCollection.insertOne(comment);
+            res.send(result)
+        })
+
+        app.get('/comment', async (req, res) => {
+            const result = await commentCollection.find().toArray();
+            res.send(result);
+        })
 
 
 
