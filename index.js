@@ -3,12 +3,19 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require('dotenv').config()
+const jwt = require("jsonwebtoken")
 
 const port = process.env.PORT || 5000;
 
 
 // middleware
-app.use(cors())
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+    ],
+    credentials: true
+}))
 app.use(express.json());
 
 
@@ -31,6 +38,26 @@ async function run() {
         const allBlogsCollection = await client.db('blogsDB').collection('allBlogs')
         const wishlistCollection = await client.db('blogsDB').collection('wishlist')
         const commentCollection = await client.db('blogsDB').collection('comment')
+
+
+        //jwt token create
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_SECRET_TOKEN, { expiresIn: '100000h' });
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none'
+            })
+                .send({ success: true })
+        })
+
+        // clear cookies
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+        })
 
 
         // all blogs post collections
@@ -88,7 +115,6 @@ async function run() {
 
 
 
-
         // all blogs post in wishlist collections
         app.post('/wishlist', async (req, res) => {
             const cart = req.body;
@@ -120,8 +146,6 @@ async function run() {
             const result = await commentCollection.find().toArray();
             res.send(result);
         })
-
-
 
 
 
