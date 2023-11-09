@@ -3,7 +3,9 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require('dotenv').config()
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser")
+
 
 const port = process.env.PORT || 5000;
 
@@ -17,6 +19,29 @@ app.use(cors({
     credentials: true
 }))
 app.use(express.json());
+app.use(cookieParser());
+
+
+//create middleware instance
+const logger = (req, res, next) => {
+    // console.log('log info', req.method, req.url);
+    next();
+}
+
+const verify = (req, res, next) => {
+    const token = req?.cookies?.token;
+    // console.log("token in the middle ware", token);
+    if (!token) {
+        return res.status(401).send({ message: 'unauthorize access' });
+    }
+    jwt.verify(token, process.env.ACCESS_SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorize access' });
+        }
+        req.user = decoded;
+        next();
+    })
+};
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.fgd8wc9.mongodb.net/?retryWrites=true&w=majority`;
@@ -63,6 +88,7 @@ async function run() {
         // all blogs post collections
         app.post('/allBlogs', async (req, res) => {
             const blog = req.body;
+            console.log(req.body.email);
             const result = await allBlogsCollection.insertOne(blog)
             res.send(result)
         })
@@ -71,7 +97,6 @@ async function run() {
         //All blogs filter by category
         app.get('/allBlogs', async (req, res) => {
             let queryObj = {};
-
             const category = req.query.category;
             const title = req.query.title;
 
@@ -118,11 +143,17 @@ async function run() {
         // all blogs post in wishlist collections
         app.post('/wishlist', async (req, res) => {
             const cart = req.body;
+            // console.log(req.body);
             const result = await wishlistCollection.insertOne(cart)
             res.send(result)
         })
 
-        app.get('/wishlist', async (req, res) => {
+
+        app.get('/wishlist', /* logger, verify, */ async (req, res) => {
+
+            // if (req.user.email !== req.query.email) {
+            //     return res.status(403).send({ message: 'forbidden access' })
+            // }
             const result = await wishlistCollection.find().toArray();
             res.send(result);
         })
