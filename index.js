@@ -15,6 +15,8 @@ app.use(cors({
     origin: [
         'http://localhost:5173',
         'http://localhost:5174',
+        "https://blog-website-e0127.firebaseapp.com",
+        "https://blog-website-e0127.web.app",
     ],
     credentials: true
 }))
@@ -94,7 +96,7 @@ async function run() {
         })
 
         // recent and all blogs collection
-        //All blogs filter by category
+        //All blogs filter by category and search
         app.get('/allBlogs', async (req, res) => {
             let queryObj = {};
             const category = req.query.category;
